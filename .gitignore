@@ -1,5 +1,6 @@
 /data/*
 !/data/misty
+!/data/charon
 /projects/*
 !/projects/*/config.yaml
 
