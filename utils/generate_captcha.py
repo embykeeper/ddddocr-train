@@ -22,7 +22,7 @@ def digits(output: Path = Argument(..., file_okay=False), num: int = 10000, char
         
 @app.command()
 def words(output: Path = Argument(..., file_okay=False), num: int = 10000, chars: int = 4, case: bool = False, font: List[Path]=(), font_size: List[int]=(42, 50, 56)):
-    image = ImageCaptcha(width=280, height=140, fonts=[str(f) for f in font], font_sizes=font_size)
+    image = ImageCaptcha(width=210, height=100, fonts=[str(f) for f in font], font_sizes=font_size)
     output.mkdir(parents=True, exist_ok=True)
     for i in trange(num, desc='Generating captchas'):
         random_chars = random.randint(*chars) if isinstance(chars, Iterable) else chars
