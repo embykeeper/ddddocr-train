@@ -11,8 +11,11 @@ from loguru import logger
 class CacheData:
     def __init__(self, project_name: str):
         self.project_name = project_name
-        self.project_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "projects",
-                                         project_name)
+        self.project_path = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+            "projects",
+            project_name,
+        )
         if os.path.exists(self.project_path):
             self.cache_path = os.path.join(self.project_path, "cache")
         else:
@@ -20,7 +23,7 @@ class CacheData:
             exit()
         self.config = Config(project_name)
         self.conf = self.config.load_config()
-        self.bath_path = self.conf['System']['Path']
+        self.bath_path = self.conf["System"]["Path"]
         self.allow_ext = []
 
     def cache(self, base_path: str, search_type="name"):
@@ -40,16 +43,22 @@ class CacheData:
         labels_path = os.path.join(base_path, "labels.txt")
         images_path = os.path.join(base_path, "images")
         if not os.path.exists(labels_path):
-            logger.error("\nThe file labels.txt not found in path ----> {}".format(base_path))
+            logger.error(
+                "\nThe file labels.txt not found in path ----> {}".format(base_path)
+            )
             exit()
         if not os.path.exists(images_path) or not os.path.isdir(images_path):
-            logger.error("\nThe dir {} not found in path ----> {}".format(images_path, base_path))
+            logger.error(
+                "\nThe dir {} not found in path ----> {}".format(images_path, base_path)
+            )
             exit()
         files = os.listdir(images_path)
         logger.info("\nFiles number is {}.".format(len(files)))
         with open(labels_path, "r", encoding="utf-8") as f:
             labels_lines = f.readlines()
-        labels_lines = [line.replace("\r", "").replace("\n", "") for line in labels_lines]
+        labels_lines = [
+            line.replace("\r", "").replace("\n", "") for line in labels_lines
+        ]
         labels_filename_lines = [line.split("\t")[0] for line in labels_lines]
         logger.info("\nLabels number is {}.".format(len(labels_lines)))
         logger.info("\nChecking labels.txt ...")
@@ -64,7 +73,7 @@ class CacheData:
 
         for file in tqdm.tqdm(lines):
             if is_file:
-                line_list = file.split('\t')
+                line_list = file.split("\t")
                 filename = line_list[0]
                 label = line_list[1]
             else:
@@ -73,31 +82,41 @@ class CacheData:
             if filename in error_files:
                 continue
             label = label.replace(" ", "")
-            if filename.split('.')[-1] in self.allow_ext:
+            if filename.split(".")[-1] in self.allow_ext:
                 if " " in filename:
-                    logger.warning("The {} has black. We will remove it!".format(filename))
+                    logger.warning(
+                        "The {} has black. We will remove it!".format(filename)
+                    )
                     continue
-                caches.append('\t'.join([filename, label]))
-                if not self.conf['Model']['Word']:
+                caches.append("\t".join([filename, label]))
+                if not self.conf["Model"]["Word"]:
                     label = list(label)
                     labels.extend(label)
                 else:
                     labels.append(label)
 
             else:
-                logger.warning("\nFile({}) has a suffix that is not allowed! We will remove it!".format(file))
+                logger.warning(
+                    "\nFile({}) has a suffix that is not allowed! We will remove it!".format(
+                        file
+                    )
+                )
         labels = list(set(labels))
-        if not self.conf['Model']['Word']:
+        if not self.conf["Model"]["Word"]:
             labels.insert(0, " ")
-        logger.info("\nCoolect labels is {}".format(json.dumps(labels, ensure_ascii=False)))
-        self.conf['System']['Path'] = base_path
-        self.conf['Model']['CharSet'] = labels
-        self.config.make_config(config_dict=self.conf, single=self.conf['Model']['Word'])
+        logger.info(
+            "\nCoolect labels is {}".format(json.dumps(labels, ensure_ascii=False))
+        )
+        self.conf["System"]["Path"] = base_path
+        self.conf["Model"]["CharSet"] = labels
+        self.config.make_config(
+            config_dict=self.conf, single=self.conf["Model"]["Word"]
+        )
         logger.info("\nWriting Cache Data!")
         del lines
         logger.info("\nCache Data Number is {}".format(len(caches)))
         logger.info("\nWriting Train and Val File.".format(len(caches)))
-        val = self.conf['System']['Val']
+        val = self.conf["System"]["Val"]
         if 0 < val < 1:
             val_num = int(len(caches) * val)
         elif 1 < val < len(caches):
@@ -109,9 +128,13 @@ class CacheData:
         train_set = caches[val_num:]
         val_set = caches[:val_num]
         del caches
-        with open(os.path.join(self.cache_path, "cache.train.tmp"), 'w', encoding="utf-8") as f:
+        with open(
+            os.path.join(self.cache_path, "cache.train.tmp"), "w", encoding="utf-8"
+        ) as f:
             f.write("\n".join(train_set))
-        with open(os.path.join(self.cache_path, "cache.val.tmp"), 'w', encoding="utf-8") as f:
+        with open(
+            os.path.join(self.cache_path, "cache.val.tmp"), "w", encoding="utf-8"
+        ) as f:
             f.write("\n".join(val_set))
         logger.info("\nTrain Data Number is {}".format(len(train_set)))
         logger.info("\nVal Data Number is {}".format(len(val_set)))

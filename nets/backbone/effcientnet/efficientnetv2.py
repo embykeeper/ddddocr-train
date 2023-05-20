@@ -10,7 +10,7 @@ import torch
 import torch.nn as nn
 import math
 
-__all__ = ['effnetv2_s', 'effnetv2_m', 'effnetv2_l', 'effnetv2_xl']
+__all__ = ["effnetv2_s", "effnetv2_m", "effnetv2_l", "effnetv2_xl"]
 
 
 def _make_divisible(v, divisor, min_value=None):
@@ -34,7 +34,7 @@ def _make_divisible(v, divisor, min_value=None):
 
 
 # SiLU (Swish) activation function
-if hasattr(nn, 'SiLU'):
+if hasattr(nn, "SiLU"):
     SiLU = nn.SiLU
 else:
     # For compatibility with old PyTorch versions
@@ -51,7 +51,7 @@ class SELayer(nn.Module):
             nn.Linear(oup, _make_divisible(inp // reduction, 8)),
             SiLU(),
             nn.Linear(_make_divisible(inp // reduction, 8), oup),
-            nn.Sigmoid()
+            nn.Sigmoid(),
         )
 
     def forward(self, x):
@@ -63,17 +63,13 @@ class SELayer(nn.Module):
 
 def conv_3x3_bn(inp, oup, stride):
     return nn.Sequential(
-        nn.Conv2d(inp, oup, 3, stride, 1, bias=False),
-        nn.BatchNorm2d(oup),
-        SiLU()
+        nn.Conv2d(inp, oup, 3, stride, 1, bias=False), nn.BatchNorm2d(oup), SiLU()
     )
 
 
 def conv_1x1_bn(inp, oup):
     return nn.Sequential(
-        nn.Conv2d(inp, oup, 1, 1, 0, bias=False),
-        nn.BatchNorm2d(oup),
-        SiLU()
+        nn.Conv2d(inp, oup, 1, 1, 0, bias=False), nn.BatchNorm2d(oup), SiLU()
     )
 
 
@@ -91,7 +87,9 @@ class MBConv(nn.Module):
                 nn.BatchNorm2d(hidden_dim),
                 SiLU(),
                 # dw
-                nn.Conv2d(hidden_dim, hidden_dim, 3, stride, 1, groups=hidden_dim, bias=False),
+                nn.Conv2d(
+                    hidden_dim, hidden_dim, 3, stride, 1, groups=hidden_dim, bias=False
+                ),
                 nn.BatchNorm2d(hidden_dim),
                 SiLU(),
                 SELayer(inp, hidden_dim),
@@ -118,7 +116,7 @@ class MBConv(nn.Module):
 
 
 class EffNetV2(nn.Module):
-    def __init__(self, cfgs, nc=3, width_mult=1.):
+    def __init__(self, cfgs, nc=3, width_mult=1.0):
         super(EffNetV2, self).__init__()
         self.cfgs = cfgs
 
@@ -130,7 +128,9 @@ class EffNetV2(nn.Module):
         for t, c, n, s, use_se in self.cfgs:
             output_channel = _make_divisible(c * width_mult, 8)
             for i in range(n):
-                layers.append(block(input_channel, output_channel, s if i == 0 else 1, t, use_se))
+                layers.append(
+                    block(input_channel, output_channel, s if i == 0 else 1, t, use_se)
+                )
                 input_channel = output_channel
         self.features = nn.Sequential(*layers)
 
@@ -144,7 +144,7 @@ class EffNetV2(nn.Module):
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
                 n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
-                m.weight.data.normal_(0, math.sqrt(2. / n))
+                m.weight.data.normal_(0, math.sqrt(2.0 / n))
                 if m.bias is not None:
                     m.bias.data.zero_()
             elif isinstance(m, nn.BatchNorm2d):
@@ -221,6 +221,7 @@ def effnetv2_xl(**kwargs):
     ]
     return EffNetV2(cfgs, **kwargs)
 
+
 def test():
     net = effnetv2_s(nc=1)
     x = torch.randn(1, 1, 128, 128)
@@ -228,5 +229,5 @@ def test():
     print(y.size())
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     test()

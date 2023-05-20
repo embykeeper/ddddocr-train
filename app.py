@@ -7,7 +7,6 @@ from utils import train
 
 
 class App:
-
     def __init__(self):
         logger.info("\nHello baby~")
 
@@ -17,7 +16,9 @@ class App:
         pm.create_project(project_name, single)
 
     def cache(self, project_name: str, base_path: str, search_type: str = "name"):
-        logger.info("\nCaching Data ----> {}\nPath ----> {}".format(project_name, base_path))
+        logger.info(
+            "\nCaching Data ----> {}\nPath ----> {}".format(project_name, base_path)
+        )
         cache = cache_data.CacheData(project_name)
         cache.cache(base_path, search_type)
         pass
@@ -28,6 +29,5 @@ class App:
         trainer.start()
 
 
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     fire.Fire(App)

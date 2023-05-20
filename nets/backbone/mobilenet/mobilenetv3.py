@@ -1,9 +1,9 @@
-'''MobileNetV3 in PyTorch.
+"""MobileNetV3 in PyTorch.
 See the paper "Inverted Residuals and Linear Bottlenecks:
 Mobile Networks for Classification, Detection and Segmentation" for more details.
 
 import from https://github.com/xiaolai-sqlai/mobilenetv3/blob/master/mobilenetv3.py
-'''
+"""
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -27,12 +27,26 @@ class SeModule(nn.Module):
         super(SeModule, self).__init__()
         self.se = nn.Sequential(
             nn.AdaptiveAvgPool2d(1),
-            nn.Conv2d(in_size, in_size // reduction, kernel_size=1, stride=1, padding=0, bias=False),
+            nn.Conv2d(
+                in_size,
+                in_size // reduction,
+                kernel_size=1,
+                stride=1,
+                padding=0,
+                bias=False,
+            ),
             nn.BatchNorm2d(in_size // reduction),
             nn.ReLU(inplace=True),
-            nn.Conv2d(in_size // reduction, in_size, kernel_size=1, stride=1, padding=0, bias=False),
+            nn.Conv2d(
+                in_size // reduction,
+                in_size,
+                kernel_size=1,
+                stride=1,
+                padding=0,
+                bias=False,
+            ),
             nn.BatchNorm2d(in_size),
-            hsigmoid()
+            hsigmoid(),
         )
 
     def forward(self, x):
@@ -40,27 +54,42 @@ class SeModule(nn.Module):
 
 
 class Block(nn.Module):
-    '''expand + depthwise + pointwise'''
+    """expand + depthwise + pointwise"""
 
-    def __init__(self, kernel_size, in_size, expand_size, out_size, nolinear, semodule, stride):
+    def __init__(
+        self, kernel_size, in_size, expand_size, out_size, nolinear, semodule, stride
+    ):
         super(Block, self).__init__()
         self.stride = stride
         self.se = semodule
 
-        self.conv1 = nn.Conv2d(in_size, expand_size, kernel_size=1, stride=1, padding=0, bias=False)
+        self.conv1 = nn.Conv2d(
+            in_size, expand_size, kernel_size=1, stride=1, padding=0, bias=False
+        )
         self.bn1 = nn.BatchNorm2d(expand_size)
         self.nolinear1 = nolinear
-        self.conv2 = nn.Conv2d(expand_size, expand_size, kernel_size=kernel_size, stride=stride,
-                               padding=kernel_size // 2, groups=expand_size, bias=False)
+        self.conv2 = nn.Conv2d(
+            expand_size,
+            expand_size,
+            kernel_size=kernel_size,
+            stride=stride,
+            padding=kernel_size // 2,
+            groups=expand_size,
+            bias=False,
+        )
         self.bn2 = nn.BatchNorm2d(expand_size)
         self.nolinear2 = nolinear
-        self.conv3 = nn.Conv2d(expand_size, out_size, kernel_size=1, stride=1, padding=0, bias=False)
+        self.conv3 = nn.Conv2d(
+            expand_size, out_size, kernel_size=1, stride=1, padding=0, bias=False
+        )
         self.bn3 = nn.BatchNorm2d(out_size)
 
         self.shortcut = nn.Sequential()
         if stride == 1 and in_size != out_size:
             self.shortcut = nn.Sequential(
-                nn.Conv2d(in_size, out_size, kernel_size=1, stride=1, padding=0, bias=False),
+                nn.Conv2d(
+                    in_size, out_size, kernel_size=1, stride=1, padding=0, bias=False
+                ),
                 nn.BatchNorm2d(out_size),
             )
 
@@ -109,7 +138,7 @@ class MobileNetV3_Large(nn.Module):
     def init_params(self):
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
-                init.kaiming_normal_(m.weight, mode='fan_out')
+                init.kaiming_normal_(m.weight, mode="fan_out")
                 if m.bias is not None:
                     init.constant_(m.bias, 0)
             elif isinstance(m, nn.BatchNorm2d):
@@ -158,7 +187,7 @@ class MobileNetV3_Small(nn.Module):
     def init_params(self):
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
-                init.kaiming_normal_(m.weight, mode='fan_out')
+                init.kaiming_normal_(m.weight, mode="fan_out")
                 if m.bias is not None:
                     init.constant_(m.bias, 0)
             elif isinstance(m, nn.BatchNorm2d):
@@ -187,5 +216,6 @@ def test():
     y = y.view(w, b, c * h)
     print(y.size())
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     test()
