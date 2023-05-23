@@ -1,12 +1,13 @@
 from math import sqrt, pow
 from pathlib import Path
 import random
+import string
 from typing import List
 import uuid
 import json
 
 from loguru import logger
-from PIL import Image, ImageDraw, ImageFilter, ImageOps
+from PIL import Image, ImageDraw, ImageFilter
 from captcha.image import ImageCaptcha
 from tqdm import tqdm
 from typer import Typer, Argument
@@ -65,7 +66,6 @@ class JMSCaptcha(ImageCaptcha):
                 w2 - x2,
                 -y1,
             )
-            im = im.resize((w2, h2))
             im = im.transform((w, h), Image.Transform.QUAD, data)
             return im
 
@@ -73,7 +73,7 @@ class JMSCaptcha(ImageCaptcha):
         for c in chars:
             images.append(_draw_character(c))
 
-        text_width = sum([im.size[0] for im in images])
+        text_width = int(sum([im.size[0] for im in images]) * random.randint(62, 65) / 100)
 
         width = max(text_width, self._width)
         height = int(self._height * width / self._width)
@@ -99,7 +99,7 @@ class JMSCaptcha(ImageCaptcha):
                 ymove = -ymove
             shadow.paste(imr, (offset + xmove, position + ymove), imr)
             offset = (
-                offset + w + random.randint(-int(0.4 * average), -int(0.2 * average))
+                offset + w + random.randint(-int(0.7 * average), -int(0.5 * average))
             )
 
         stroke = Image.new("RGBA", compose.size, (255, 255, 255, 255))
@@ -120,9 +120,9 @@ class JMSCaptcha(ImageCaptcha):
     def create_random_lines(image, length):
         w, h = image.size
         while length > 2:
-            l = random.randint(2, max(length, int(image.width / 3)))
+            l = random.randint(2, int(image.width / 3))
             length -= l
-            y = random.randint(1, max(int(sqrt(l - 1) / 5), 1))
+            y = random.randint(1, max(int(sqrt(l - 1)), 1))
             x = max(int(sqrt(pow(l, 2) - pow(y, 2))), 1)
             x1 = random.randint(0, w - x)
             x2 = x1 + x
@@ -133,8 +133,8 @@ class JMSCaptcha(ImageCaptcha):
     @staticmethod
     def create_random_circles(image):
         w, h = image.size
-        for _ in range(random.randint(1, 3)):
-            r = max(random.randint(int(image.width * 0.01), int(image.width * 0.03)), 1)
+        for _ in range(random.randint(12, 20)):
+            r = max(random.randint(int(image.width * 0.005), int(image.width * 0.02)), 1)
             x = random.randint(0, w)
             y = random.randint(0, h)
             p1 = (x - r, y - r)
@@ -148,7 +148,7 @@ class JMSCaptcha(ImageCaptcha):
         background = (255, 255, 255)
         color = (0, 0, 0, 255)
         im = self.create_captcha_image(chars, color, background)
-        self.create_random_lines(im, self._width)
+        self.create_random_lines(im, self._width * 4)
         self.create_random_circles(im)
         im = im.filter(ImageFilter.SHARPEN)
         return im
@@ -158,7 +158,7 @@ class JMSCaptcha(ImageCaptcha):
 def digits(
     output: Path = Argument(..., file_okay=False),
     num: int = 10000,
-    font_size: List[int] = [100, 110, 120],
+    font_size: List[int] = [140, 150, 160],
 ):
     image = JMSCaptcha(
         width=256, height=128, fonts=[str(data / "仿宋.ttf")], font_sizes=font_size
@@ -178,8 +178,9 @@ def digits(
     output.mkdir(parents=True, exist_ok=True)
 
     for w in tqdm(words, desc="Generating captchas"):
+        r = "".join(random.choice(string.digits) for _ in range(3))
         hash = str(uuid.uuid4()).replace("-", "")
-        image.write(w, output / f"{w}_{hash}.png")
+        image.write(w[0] + r[0] + w[1] + r[1] + w[2] + r[2] + w[3], output / f"{w}_{hash}.png")
 
 
 if __name__ == "__main__":

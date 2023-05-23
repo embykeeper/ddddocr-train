@@ -10,6 +10,8 @@ from typer import Typer, Argument
 
 app = Typer()
 
+data = Path(__file__).parent / "data"
+data.mkdir(parents=True, exist_ok=True)
 
 @app.command()
 def digits(
@@ -64,10 +66,11 @@ def cchars(
     font_size: List[int] = (42, 50, 56),
 ):
     image = ImageCaptcha(
-        width=210, height=100, fonts=[str(f) for f in font], font_sizes=font_size
+        width=160, height=60, fonts=[str(f) for f in font], font_sizes=font_size
     )
     output.mkdir(parents=True, exist_ok=True)
-    cchars = list(map(chr, range(0x4e00, 0xa000)))
+    with open(data / 'common_cchars.txt') as f:
+        cchars = list(f.read().strip())
     for i in trange(num, desc="Generating captchas"):
         random_chars = random.randint(*chars) if isinstance(chars, Iterable) else chars
         code = "".join(random.choice(cchars) for _ in range(random_chars))
