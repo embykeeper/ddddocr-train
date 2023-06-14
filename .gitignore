@@ -2,8 +2,8 @@
 !/data/misty
 !/data/charon
 !/data/jms
+!/data/jms-hard
 /projects/*
-!/projects/*/config.yaml
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -1,3 +1,4 @@
+from concurrent.futures import ProcessPoolExecutor, as_completed
 from math import sqrt, pow
 from pathlib import Path
 import random
@@ -39,7 +40,7 @@ class JMSCaptcha(ImageCaptcha):
                 c,
                 font=font,
                 fill=color,
-                stroke_width=random.randint(0, 1),
+                stroke_width=1,
                 stroke_fill=color,
             )
 
@@ -82,7 +83,7 @@ class JMSCaptcha(ImageCaptcha):
         shadow = Image.new("RGBA", (width, height), color=(0, 0, 0, 0))
 
         average = int(text_width / len(chars))
-        offset = int(average * 0.1)
+        offset = int(average * 0.7)
 
         for im in images:
             w, h = im.size
@@ -99,13 +100,13 @@ class JMSCaptcha(ImageCaptcha):
                 ymove = -ymove
             shadow.paste(imr, (offset + xmove, position + ymove), imr)
             offset = (
-                offset + w + random.randint(-int(0.7 * average), -int(0.5 * average))
+                offset + w + random.randint(-int(0.82 * average), -int(0.7 * average))
             )
 
         stroke = Image.new("RGBA", compose.size, (255, 255, 255, 255))
         compose_alpha = compose.getchannel(3).point(lambda x: 255 if x > 0 else 0)
         stroke_alpha = compose_alpha.filter(ImageFilter.MaxFilter(3))
-        stroke_alpha = stroke_alpha.filter(ImageFilter.SMOOTH)
+        stroke_alpha = stroke_alpha.filter(ImageFilter.SHARPEN)
         stroke.putalpha(stroke_alpha)
         compose = Image.alpha_composite(stroke, compose)
         image.paste(shadow, (0, 0), shadow)
@@ -153,6 +154,11 @@ class JMSCaptcha(ImageCaptcha):
         im = im.filter(ImageFilter.SHARPEN)
         return im
 
+def generate(image, w, output):
+    r = "".join(random.choice(string.digits) for _ in range(3))
+    hash = str(uuid.uuid4()).replace("-", "")
+    im = image.generate_image(w[0] + r[0] + w[1] + r[1] + w[2] + r[2] + w[3])
+    im.save(output / f"{w}_{hash}.jpg", quality=80)
 
 @app.command()
 def digits(
@@ -176,12 +182,12 @@ def digits(
     words = random.choices(idioms, k=num)
     logger.info(f"已读取 {len(idioms)} 条成语, 随机选取 {len(words)} 条成语.")
     output.mkdir(parents=True, exist_ok=True)
-
-    for w in tqdm(words, desc="Generating captchas"):
-        r = "".join(random.choice(string.digits) for _ in range(3))
-        hash = str(uuid.uuid4()).replace("-", "")
-        image.write(w[0] + r[0] + w[1] + r[1] + w[2] + r[2] + w[3], output / f"{w}_{hash}.png")
-
+    with ProcessPoolExecutor() as e:
+        futures = []
+        for w in words:
+            futures.append(e.submit(generate, image, w, output))
+        for f in tqdm(as_completed(futures), desc="Generating captchas"):
+            pass
 
 if __name__ == "__main__":
     app()
