@@ -186,7 +186,7 @@ def digits(
         futures = []
         for w in words:
             futures.append(e.submit(generate, image, w, output))
-        for f in tqdm(as_completed(futures), desc="Generating captchas"):
+        for f in tqdm(as_completed(futures), total=len(futures), desc="Generating captchas"):
             pass
 
 if __name__ == "__main__":

@@ -3,6 +3,7 @@
 !/data/charon
 !/data/jms
 !/data/jms-hard
+!/data/ljyy
 /projects/*
 
 # Byte-compiled / optimized / DLL files
