@@ -23,7 +23,7 @@ def main(
             show_ad=False, import_onnx_path=str(model), charsets_path=str(charsets)
         )
         captcha = ocr.classification(Image.open(inp))
-        print(f"{inp.name}: {captcha}")
+        print(f"{inp.name}: {' '.join(captcha)}")
 
 
 if __name__ == "__main__":

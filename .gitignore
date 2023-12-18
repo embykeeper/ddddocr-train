@@ -4,6 +4,7 @@
 !/data/jms
 !/data/jms-hard
 !/data/ljyy
+!/data/ljyy-hard
 /projects/*
 
 # Byte-compiled / optimized / DLL files
