@@ -7,7 +7,7 @@
 !/data/ljyy-hard
 !/data/misty-new
 /projects/*/*
-/projects/*/config.yaml
+!/projects/*/config.yaml
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -1,0 +1,24 @@
+Model:
+    CharSet: [' ', R, F, '3', '2', X, K, V, G, B, '8', '0', D, Q, '9', '6', W, '7',
+        T, E, J, H, A, P, L, O, N, Z, '4', I, S, Y, C, '5', U, '1', M]
+    ImageChannel: 1
+    ImageHeight: 64
+    ImageWidth: -1
+    Word: false
+System:
+    Allow_Ext: [jpg, jpeg, png, bmp]
+    GPU: true
+    GPU_ID: 0
+    Path: data/words6-mix
+    Project: words6
+    Val: 0.03
+Train:
+    BATCH_SIZE: 32
+    CNN: {NAME: ddddocr}
+    DROPOUT: 0.3
+    LR: 0.01
+    OPTIMIZER: SGD
+    SAVE_CHECKPOINTS_STEP: 2000
+    TARGET: {Accuracy: 0.97, Cost: 0.05, Epoch: 20}
+    TEST_BATCH_SIZE: 32
+    TEST_STEP: 1000
