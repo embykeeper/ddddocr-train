@@ -4,3 +4,6 @@ pyyaml
 tqdm
 numpy
 pillow
+ddddocrfix
+typer
+onnx
